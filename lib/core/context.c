@@ -368,21 +368,25 @@ struct lws_context *
 lws_create_context(const struct lws_context_creation_info *info)
 {
 	struct lws_context *context = NULL;
+    lwsl_notice("Distance between start to ka_interval: %d\n", (int)(((uint8_t *)&(info->ka_interval)) - (uint8_t *)info));
+    lwsl_notice("ka values 1: %d, %d\n", info->ka_time, info->ka_interval);
 #if !defined(LWS_WITH_NO_LOGS)
 	const char *s = "IPv6-absent";
 #endif
 #if defined(LWS_WITH_FILE_OPS)
 	struct lws_plat_file_ops *prev;
+    lwsl_notice("ka values file ops: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 #ifndef LWS_NO_DAEMONIZE
 	pid_t pid_daemon = get_daemonize_pid();
+    lwsl_notice("ka values daemonize: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 #if defined(LWS_WITH_NETWORK)
 	const lws_plugin_evlib_t *plev = NULL;
 	unsigned short count_threads = 1;
 	uint8_t *u;
 	uint16_t us_wait_resolution = 0;
-
+    lwsl_notice("ka values daemonize: %d, %d\n", info->ka_time, info->ka_interval);
 #if defined(__ANDROID__)
 	struct rlimit rt;
 #endif
@@ -394,18 +398,22 @@ lws_create_context(const struct lws_context_creation_info *info)
 		s1 = 4096,
 #endif
 		size = sizeof(struct lws_context);
+        lwsl_notice("ka values freertos: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 
 	int n;
 	unsigned int lpf = info->fd_limit_per_thread;
 #if defined(LWS_WITH_EVLIB_PLUGINS) && defined(LWS_WITH_EVENT_LIBS)
 	struct lws_plugin		*evlib_plugin_list = NULL;
+    lwsl_notice("ka values evlib plugin: %d, %d\n", info->ka_time, info->ka_interval);
 #if defined(_DEBUG) && !defined(LWS_WITH_NO_LOGS)
 	char		*ld_env;
+    lwsl_notice("ka values logs: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 #endif
 #if defined(LWS_WITH_LIBUV)
 	char fatal_exit_defer = 0;
+    lwsl_notice("ka values libuv: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 
 	if (lws_fi(&info->fic, "ctx_createfail1"))
@@ -413,18 +421,23 @@ lws_create_context(const struct lws_context_creation_info *info)
 
 	if (lpf) {
 		lpf+= 2;
+        lwsl_notice("ka values valid lpf: %d, %d\n", info->ka_time, info->ka_interval);
 #if defined(LWS_WITH_SYS_ASYNC_DNS)
 		lpf++;
+        lwsl_notice("ka values valid lpf async dns: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 #if defined(LWS_WITH_SYS_NTPCLIENT)
 		lpf++;
+        lwsl_notice("ka values valid lpf ntp client: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 #if defined(LWS_WITH_SYS_DHCP_CLIENT)
 		lpf++;
+        lwsl_notice("ka values valid lpf dhcp client: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 	}
 
 	lwsl_notice("LWS: %s, loglevel %d\n", library_version, log_level);
+    lwsl_notice("ka values 2: %d, %d\n", info->ka_time, info->ka_interval);
 
 #if defined(LWS_WITH_IPV6) && !defined(LWS_WITH_NO_LOGS)
 	if (!lws_check_opt(info->options, LWS_SERVER_OPTION_DISABLE_IPV6))
@@ -434,6 +447,7 @@ lws_create_context(const struct lws_context_creation_info *info)
 #endif
 
 	lwsl_notice("%s%s\n", opts_str, s);
+    lwsl_notice("ka values 3: %d, %d\n", info->ka_time, info->ka_interval);
 
 	if (lws_plat_context_early_init())
 		goto early_bail;
@@ -450,20 +464,24 @@ lws_create_context(const struct lws_context_creation_info *info)
 
 	/* pt fakewsi and the pt serv buf allocations ride after the context */
 	size += count_threads * s1;
+    lwsl_notice("ka values with network 1t: %d, %d\n", info->ka_time, info->ka_interval);
 #if !defined(LWS_PLAT_FREERTOS)
 	size += (count_threads * sizeof(struct lws));
+    lwsl_notice("ka values in no freertos 1: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 
 #if defined(LWS_WITH_POLL)
 	{
 		extern const lws_plugin_evlib_t evlib_poll;
 		plev = &evlib_poll;
+        lwsl_notice("ka values with poll: %d, %d\n", info->ka_time, info->ka_interval);
 #if !defined(LWS_PLAT_FREERTOS)
 		/*
 		 * ... freertos has us-resolution select()...
 		 * others are to ms-resolution poll()
 		 */
 		us_wait_resolution = 1000;
+        lwsl_notice("ka values no freertos 2: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 	}
 #endif
@@ -481,6 +499,7 @@ lws_create_context(const struct lws_context_creation_info *info)
 	ld_env = getenv("LD_LIBRARY_PATH");
 	lwsl_info("%s: ev lib path %s, '%s'\n", __func__,
 			LWS_INSTALL_LIBDIR, ld_env);
+    lwsl_notice("ka values in debug 2: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 
 	for (n = 0; n < (int)LWS_ARRAY_SIZE(map); n++) {
@@ -499,6 +518,7 @@ lws_create_context(const struct lws_context_creation_info *info)
 					map[n].name);
 			goto bail;
 		}
+        lwsl_notice("ka values in for loop: %d, %d\n", info->ka_time, info->ka_interval);
 
 #if defined(LWS_WITH_LIBUV)
 		if (!n) /* libuv */
@@ -513,6 +533,7 @@ lws_create_context(const struct lws_context_creation_info *info)
 			goto bail;
 		}
 		plev = (const lws_plugin_evlib_t *)evlib_plugin_list->hdr;
+        lwsl_notice("ka values end of loop: %d, %d\n", info->ka_time, info->ka_interval);
 		break;
 	}
 #else
@@ -537,6 +558,7 @@ lws_create_context(const struct lws_context_creation_info *info)
 		fatal_exit_defer = !!info->foreign_loops;
 		us_wait_resolution = 0;
 	}
+    lwsl_notice("ka values libuv 2: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 
 #if defined(LWS_WITH_LIBEVENT)
@@ -545,6 +567,7 @@ lws_create_context(const struct lws_context_creation_info *info)
 		plev = &evlib_event;
 		us_wait_resolution = 0;
 	}
+    lwsl_notice("ka values valid libevent 2: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 
 #if defined(LWS_WITH_GLIB)
@@ -553,6 +576,7 @@ lws_create_context(const struct lws_context_creation_info *info)
 		plev = &evlib_glib;
 		us_wait_resolution = 0;
 	}
+    lwsl_notice("ka values glib: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 
 #if defined(LWS_WITH_LIBEV)
@@ -561,6 +585,7 @@ lws_create_context(const struct lws_context_creation_info *info)
 		plev = &evlib_ev;
 		us_wait_resolution = 0;
 	}
+    lwsl_notice("ka values libuv 3: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 
 #if defined(LWS_WITH_SDEVENT)
@@ -569,6 +594,7 @@ lws_create_context(const struct lws_context_creation_info *info)
         plev = &evlib_sd;
         us_wait_resolution = 0;
     }
+    lwsl_notice("ka values sdevent: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 
 #if defined(LWS_WITH_ULOOP)
@@ -577,6 +603,7 @@ lws_create_context(const struct lws_context_creation_info *info)
         plev = &evlib_uloop;
         us_wait_resolution = 0;
     }
+    lwsl_notice("ka values uloop: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 
 #endif /* with event libs */
@@ -591,11 +618,13 @@ lws_create_context(const struct lws_context_creation_info *info)
 		(count_threads * (size_t)plev->ops->evlib_size_pt) /* the pt evlib priv */;
 
 	lwsl_info("Event loop: %s\n", plev->ops->name);
+    lwsl_notice("ka values network 3: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 
 	context = lws_zalloc(size, "context");
 	if (!context || lws_fi(&info->fic, "ctx_createfail_oom_ctx")) {
 #if defined(LWS_WITH_SYS_FAULT_INJECTION)
+        lwsl_notice("ka values sysfaultt: %d, %d\n", info->ka_time, info->ka_interval);
 		lws_free(context);
 #endif
 		lwsl_err("No memory for lws_context\n");
@@ -605,14 +634,17 @@ lws_create_context(const struct lws_context_creation_info *info)
 #if defined(LWS_WITH_NETWORK)
 	context->event_loop_ops = plev->ops;
 	context->us_wait_resolution = us_wait_resolution;
+    lwsl_notice("ka values network 4: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 #if defined(LWS_WITH_EVENT_LIBS)
 	/* at the very end */
 	context->evlib_ctx = (uint8_t *)context + size -
 					plev->ops->evlib_size_ctx;
+    lwsl_notice("ka values event libs again: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 #if defined(LWS_WITH_EVLIB_PLUGINS) && defined(LWS_WITH_EVENT_LIBS)
 	context->evlib_plugin_list = evlib_plugin_list;
+    lwsl_notice("ka values ev plugin again: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 
 #if !defined(LWS_PLAT_FREERTOS)
@@ -620,9 +652,11 @@ lws_create_context(const struct lws_context_creation_info *info)
 	context->gid = info->gid;
 	context->username = info->username;
 	context->groupname = info->groupname;
+    lwsl_notice("ka values not freertos again: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 	context->system_ops = info->system_ops;
 	context->pt_serv_buf_size = (unsigned int)s1;
+    lwsl_notice("ka values else part: %d, %d\n", info->ka_time, info->ka_interval);
 
 #if defined(LWS_WITH_SYS_FAULT_INJECTION)
 	context->fic.name = "ctx";
@@ -632,6 +666,7 @@ lws_create_context(const struct lws_context_creation_info *info)
 		 * leaving it empty, so no injection added to default vhost
 		 */
 		lws_fi_import(&context->fic, &info->fic);
+    lwsl_notice("ka valuessysfault injection again: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 
 
@@ -641,6 +676,7 @@ lws_create_context(const struct lws_context_creation_info *info)
 			5000000;
 #else
 			2000000;
+            lwsl_notice("ka values syssmd: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 	context->smd_queue_depth = (uint16_t)(info->smd_queue_depth ?
 						info->smd_queue_depth :
@@ -655,13 +691,15 @@ lws_create_context(const struct lws_context_creation_info *info)
 	context->lcg[LWSLCG_WSI].tag_prefix = "wsi";
 	context->lcg[LWSLCG_VHOST].tag_prefix = "vh";
 	context->lcg[LWSLCG_WSI_SERVER].tag_prefix = "wsisrv"; /* adopted */
-
+    lwsl_notice("ka values getting close: %d, %d\n", info->ka_time, info->ka_interval);
 #if defined(LWS_ROLE_H2) || defined(LWS_ROLE_MQTT)
 	context->lcg[LWSLCG_WSI_MUX].tag_prefix = "mux", /* a mux child wsi */
+    lwsl_notice("ka values lws role h2/mqtt: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 
 #if defined(LWS_WITH_CLIENT)
 	context->lcg[LWSLCG_WSI_CLIENT].tag_prefix = "wsicli";
+    lwsl_notice("ka values lws role client: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 
 #if defined(LWS_WITH_SECURE_STREAMS)
@@ -691,7 +729,7 @@ lws_create_context(const struct lws_context_creation_info *info)
 	context->mt_service = lws_metric_create(context,
 					LWSMTFL_REPORT_DUTY_WALLCLOCK_US |
 					LWSMTFL_REPORT_ONLY_GO, "cpu.svc");
-
+    lwsl_notice("ka values lws sysmetrics: %d, %d\n", info->ka_time, info->ka_interval);
 #if defined(LWS_WITH_CLIENT)
 
 	context->mt_conn_dns = lws_metric_create(context,
@@ -706,25 +744,29 @@ lws_create_context(const struct lws_context_creation_info *info)
 						 LWSMTFL_REPORT_MEAN |
 						 LWSMTFL_REPORT_DUTY_WALLCLOCK_US,
 						 "n.cn.tls");
+    lwsl_notice("ka values lws client: %d, %d\n", info->ka_time, info->ka_interval);
 #if defined(LWS_ROLE_H1) || defined(LWS_ROLE_H2)
 	context->mt_http_txn = lws_metric_create(context,
 						 LWSMTFL_REPORT_MEAN |
 						 LWSMTFL_REPORT_DUTY_WALLCLOCK_US,
 						 "n.http.txn");
+    lwsl_notice("ka values h1/h2: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 
 	context->mth_conn_failures = lws_metric_create(context,
 					LWSMTFL_REPORT_HIST, "n.cn.failures");
-
+    lwsl_notice("ka values none of the roles: %d, %d\n", info->ka_time, info->ka_interval);
 #if defined(LWS_WITH_SYS_ASYNC_DNS)
 	context->mt_adns_cache = lws_metric_create(context,
 						   LWSMTFL_REPORT_MEAN |
 						   LWSMTFL_REPORT_DUTY_WALLCLOCK_US,
 						   "n.cn.adns");
+    lwsl_notice("ka values lws async dns: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 #if defined(LWS_WITH_SECURE_STREAMS)
 	context->mth_ss_conn = lws_metric_create(context, LWSMTFL_REPORT_HIST,
 						 "n.ss.conn");
+    lwsl_notice("ka values secure stream: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 #if defined(LWS_WITH_SECURE_STREAMS_PROXY_API)
 	context->mt_ss_cliprox_conn = lws_metric_create(context,
@@ -738,6 +780,7 @@ lws_create_context(const struct lws_context_creation_info *info)
 							  LWSMTFL_REPORT_MEAN |
 							  LWSMTFL_REPORT_DUTY_WALLCLOCK_US,
 							  "n.ss.proxcli.paylat");
+    lwsl_notice("ka values lws proxy api: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 
 #endif /* network + metrics + client */
@@ -745,6 +788,7 @@ lws_create_context(const struct lws_context_creation_info *info)
 #if defined(LWS_WITH_SERVER)
 	context->mth_srv = lws_metric_create(context,
 					     LWSMTFL_REPORT_HIST, "n.srv");
+    lwsl_notice("ka values lws server piece: %d, %d\n", info->ka_time, info->ka_interval);
 #endif /* network + metrics + server */
 
 #endif /* network + metrics */
@@ -758,15 +802,19 @@ lws_create_context(const struct lws_context_creation_info *info)
 #if defined(LWS_WITH_SECURE_STREAMS_PROXY_API)
 #if defined(LWS_WITH_CLIENT)
 	context->lcg[LWSLCG_SSP_CLIENT].tag_prefix = "SSPcli";
+    lwsl_notice("ka values lws client api: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 #if defined(LWS_WITH_SERVER)
 	context->lcg[LWSLCG_SSP_ONWARD].tag_prefix = "SSPonw";
+    lwsl_notice("ka values lws client server: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 #if defined(LWS_WITH_CLIENT)
 	context->lcg[LWSLCG_WSI_SSP_CLIENT].tag_prefix = "wsiSSPcli";
+    lwsl_notice("ka values lws client client: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 #if defined(LWS_WITH_SERVER)
 	context->lcg[LWSLCG_WSI_SSP_ONWARD].tag_prefix = "wsiSSPonw";
+    lwsl_notice("ka values lws client server again: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 #endif
 
@@ -774,6 +822,7 @@ lws_create_context(const struct lws_context_creation_info *info)
 #if defined(LWS_WITH_SECURE_STREAMS_STATIC_POLICY_ONLY)
 	/* directly use the user-provided policy object list */
 	context->pss_policies = info->pss_policies;
+    lwsl_notice("ka values lws static policy: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 
 #if defined(LWS_WITH_SECURE_STREAMS_PROXY_API) && defined(LWS_WITH_CLIENT)
@@ -784,15 +833,17 @@ lws_create_context(const struct lws_context_creation_info *info)
 		lwsl_notice("%s: using ss proxy bind '%s', port %d, ads '%s'\n",
 			__func__, context->ss_proxy_bind, context->ss_proxy_port,
 			context->ss_proxy_address);
+    lwsl_notice("ka values lws proxy api client: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 
 #if defined(LWS_WITH_NETWORK)
 	context->undestroyed_threads = count_threads;
 	context->count_threads = count_threads;
-
+    lwsl_notice("ka values lws client network: %d, %d\n", info->ka_time, info->ka_interval);
 #if defined(LWS_ROLE_WS) && defined(LWS_WITHOUT_EXTENSIONS)
         if (info->extensions)
                 lwsl_warn("%s: LWS_WITHOUT_EXTENSIONS but extensions ptr set\n", __func__);
+        lwsl_notice("ka values lws ws extensions: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 #endif /* network */
 
@@ -850,7 +901,7 @@ lws_create_context(const struct lws_context_creation_info *info)
 
 	context->fops = &context->fops_platform;
 	prev = (struct lws_plat_file_ops *)context->fops;
-
+    lwsl_notice("ka values lws file ops: %d, %d\n", info->ka_time, info->ka_interval);
 #if defined(LWS_WITH_ZIP_FOPS)
 	/* make a soft copy so we can set .next */
 	context->fops_zip = fops_zip;
@@ -861,6 +912,7 @@ lws_create_context(const struct lws_context_creation_info *info)
 	/* if user provided fops, tack them on the end of the list */
 	if (info->fops)
 		prev->next = info->fops;
+    lwsl_notice("ka values lws zip ops: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 
 #if defined(LWS_WITH_SERVER)
@@ -895,6 +947,7 @@ lws_create_context(const struct lws_context_creation_info *info)
 		rl.rlim_max = (unsigned int)info->rlimit_nofile;
 		setrlimit(RLIMIT_NOFILE, &rl);
 	}
+    lwsl_notice("ka values lws optee: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 
 #ifndef LWS_NO_DAEMONIZE
@@ -902,6 +955,7 @@ lws_create_context(const struct lws_context_creation_info *info)
 		context->started_with_parent = pid_daemon;
 		lwsl_info(" Started with daemon pid %u\n", (unsigned int)pid_daemon);
 	}
+    lwsl_notice("ka values lws daemonize: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 #if defined(__ANDROID__)
 	n = getrlimit(RLIMIT_NOFILE, &rt);
@@ -953,6 +1007,7 @@ lws_create_context(const struct lws_context_creation_info *info)
 
 #if defined(LWS_WITH_NETWORK)
 	context->token_limits = info->token_limits;
+    lwsl_notice("ka values lws client network again and again: %d, %d\n", info->ka_time, info->ka_interval);
 #endif
 
 
@@ -1100,11 +1155,13 @@ lws_create_context(const struct lws_context_creation_info *info)
 						&context->pt[n], 0);
 #endif
 	}
+    lwsl_notice("ka values getting to where I want finally: %d, %d\n", info->ka_time, info->ka_interval);
 
 	if (!info->ka_interval && info->ka_time > 0) {
 		lwsl_err("info->ka_interval can't be 0 if ka_time used\n");
 		goto free_context_fail;
 	}
+    lwsl_notice("ka values getting after: %d, %d\n", info->ka_time, info->ka_interval);
 
 #if defined(LWS_WITH_PEER_LIMITS)
 	/* scale the peer hash table according to the max fds for the process,
