@@ -368,7 +368,12 @@ struct lws_context *
 lws_create_context(const struct lws_context_creation_info *info)
 {
 	struct lws_context *context = NULL;
-    lwsl_notice("Distance between start to ka_interval: %d\n", (int)(((uint8_t *)&(info->ka_interval)) - (uint8_t *)info));
+    lwsl_notice("Hex map in lws:");
+    for(unsigned long i = 0; i < sizeof(const struct lws_context_creation_info); i++) {
+        printf("%.02x ", ((char*)info)[i]);
+    }
+    printf("\n");
+    lwsl_notice("\nDistance between start to ka_interval: %d\n", (int)(((uint8_t *)&(info->ka_interval)) - (uint8_t *)info));
     lwsl_notice("ka values 1: %d, %d\n", info->ka_time, info->ka_interval);
 #if !defined(LWS_WITH_NO_LOGS)
 	const char *s = "IPv6-absent";
