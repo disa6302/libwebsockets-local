@@ -739,8 +739,12 @@ just_kill_connection:
 	     lwsi_state_PRE_CLOSE(wsi) == LRS_WAITING_SERVER_REPLY) &&
 	    !wsi->told_user_closed &&
 	    wsi->role_ops->close_cb[lwsi_role_server(wsi)]) {
-		if (!wsi->upgraded_to_http2 || !lwsi_role_client(wsi))
-			ccb = 1;
+        lwsl_wsi_info(wsi, "Entering pre-close");
+		if (!wsi->upgraded_to_http2 || !lwsi_role_client(wsi)) {
+            lwsl_wsi_info(wsi, "h2 detected?");
+            ccb = 1;
+        }
+
 			/*
 			 * The network wsi for a client h2 connection shouldn't
 			 * call back for its role: the child stream connections
@@ -757,6 +761,7 @@ just_kill_connection:
 		 * caught with a shutdown before he got the result.  We have
 		 * to issclient_mux_substream_wasue him a close cb
 		 */
+        lwsl_wsi_info(wsi, "h2 detected again?");
 		ccb = 1;
 
 	lwsl_wsi_info(wsi, "cce=%d", ccb);

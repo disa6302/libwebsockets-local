@@ -36,7 +36,9 @@ lws_http_client_socket_service(struct lws *wsi, struct lws_pollfd *pollfd)
 	struct lws_context *context = wsi->a.context;
 	struct lws_context_per_thread *pt = &context->pt[(int)wsi->tsi];
 	char *p = (char *)&pt->serv_buf[0];
+    lwsl_info("lws_http_client_socket_service entering");
 #if defined(LWS_WITH_TLS)
+    lwsl_info("lws_http_client_socket_service tls enabled");
 	char ebuf[128];
 #endif
 	const char *cce = NULL;
@@ -50,6 +52,7 @@ lws_http_client_socket_service(struct lws *wsi, struct lws_pollfd *pollfd)
 		 * we are under PENDING_TIMEOUT_SENT_CLIENT_HANDSHAKE
 		 * timeout protection set in client-handshake.c
 		 */
+        lwsl_info("lws_http_client_socket_service LRS_WAITING_DNS");
 		lwsl_err("%s: %s: WAITING_DNS\n", __func__, lws_wsi_tag(wsi));
 		if (!lws_client_connect_2_dnsreq(wsi)) {
 			/* closed */
@@ -66,8 +69,10 @@ lws_http_client_socket_service(struct lws *wsi, struct lws_pollfd *pollfd)
 		 * we are under PENDING_TIMEOUT_SENT_CLIENT_HANDSHAKE
 		 * timeout protection set in client-handshake.c
 		 */
+        lwsl_info("lws_http_client_socket_service LRS_WAITING_CONNECT");
 		if (pollfd->revents & LWS_POLLOUT)
 			if (lws_client_connect_3_connect(wsi, NULL, NULL, 0, NULL) == NULL) {
+                lwsl_info("lws_http_client_socket_service connect 3");
 				lwsl_client("closed\n");
 				return -1;
 			}
@@ -151,7 +156,7 @@ lws_http_client_socket_service(struct lws *wsi, struct lws_pollfd *pollfd)
                /* fallthru */
 	case LRS_H1C_ISSUE_HANDSHAKE:
 
-		lwsl_debug("%s: LRS_H1C_ISSUE_HANDSHAKE\n", __func__);
+		lwsl_info("%s: LRS_H1C_ISSUE_HANDSHAKE\n", __func__);
 
 		/*
 		 * we are under PENDING_TIMEOUT_SENT_CLIENT_HANDSHAKE
@@ -183,6 +188,7 @@ start_ws_handshake:
 
 #if defined(LWS_WITH_TLS)
 		n = lws_client_create_tls(wsi, &cce, 1);
+        lwsl_info("%s: Client create failed, %d", __func__, n);
 		if (n == CCTLS_RETURN_ERROR)
 			goto bail3;
 		if (n == CCTLS_RETURN_RETRY)
@@ -259,6 +265,7 @@ start_ws_handshake:
 hs2:
 
 		p = lws_generate_client_handshake(wsi, p);
+        lwsl_info("lws_http_client_socket_service h2 label");
 		if (p == NULL) {
 			if (wsi->role_ops == &role_ops_raw_skt
 #if defined(LWS_ROLE_RAW_FILE)
@@ -317,6 +324,7 @@ hs2:
 			lwsi_set_state(wsi, LRS_WAITING_SERVER_REPLY);
 			wsi->hdr_parsing_completed = 0;
 #if defined(LWS_ROLE_H1) || defined(LWS_ROLE_H2)
+            lwsl_info("lws_http_client_socket_service in role define");
 			wsi->http.ah->parser_state = WSI_TOKEN_NAME_PART;
 			wsi->http.ah->lextable_pos = 0;
 			wsi->http.ah->unk_pos = 0;
@@ -362,6 +370,7 @@ client_http_body_sent:
 		 * handle server hanging up on us...
 		 * but if there is POLLIN waiting, handle that first
 		 */
+        lwsl_info("lws_http_client_socket_service LRS_WAITING_SERVER_REPLY");
 		if ((pollfd->revents & (LWS_POLLIN | LWS_POLLHUP)) ==
 								LWS_POLLHUP) {
 
@@ -475,7 +484,7 @@ client_http_body_sent:
 		 * right away and deal with it that way
 		 */
 		return lws_client_interpret_server_handshake(wsi);
-
+        lwsl_info("lws_http_client_socket_service right before bail");
 bail3:
 		lwsl_info("%s: closing conn at LWS_CONNMODE...SERVER_REPLY, %s, state 0x%x\n",
 				__func__, lws_wsi_tag(wsi), lwsi_state(wsi));
