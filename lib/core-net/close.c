@@ -557,8 +557,8 @@ __lws_close_free_wsi(struct lws *wsi, enum lws_close_status reason,
 
 just_kill_connection:
 
-	lwsl_wsi_debug(wsi, "real just_kill_connection A: (sockfd %d)",
-			wsi->desc.sockfd);
+	lwsl_wsi_debug(wsi, "real just_kill_connection A: (sockfd %d). Reason %d",
+			wsi->desc.sockfd, reason);
 
 #if defined(LWS_WITH_THREADPOOL) && defined(LWS_HAVE_PTHREAD_H)
 	lws_threadpool_wsi_closing(wsi);
